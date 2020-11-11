@@ -1,0 +1,49 @@
+provider "fastly" {
+  api_key = "${var.fastly_api_key}"
+}
+
+  data "template_file" "vcl_miss" {
+    template = "${file("${path.module}/vcl/vcl_miss.vcl")}"
+
+    vars {
+        www_goodrx_com_host = "${var.www_goodrx_com_host}"
+        m_goodrx_com_host = "${var.m_goodrx_com_host}"
+        ssl_cert_host = "{{ssl_cert_host}}"
+        ssl_sni_host = "${var.ssl_sni_host}"
+    }
+  }
+
+  data "template_file" "vcl_pass" {
+    template = "${file("${path.module}/vcl/vcl_pass.vcl")}"
+
+    vars {
+        www_goodrx_com_host = "${var.www_goodrx_com_host}"
+        m_goodrx_com_host = "${var.m_goodrx_com_host}"
+        
+        ssl_cert_host = "{{ssl_cert_host}}"
+        ssl_sni_host = "${var.ssl_sni_host}"
+    }
+  }
+
+  data "template_file" "vcl_recv" {
+    template = "${file("${path.module}/vcl/vcl_recv.vcl")}"
+
+    vars {
+        www_goodrx_com_host = "${var.www_goodrx_com_host}"
+        m_goodrx_com_host = "${var.m_goodrx_com_host}"
+        
+        ssl_cert_host = "{{ssl_cert_host}}"
+    }
+  }
+
+  data "template_file" "vcl_deliver" {
+    template = "${file("${path.module}/vcl/vcl_deliver.vcl")}"
+  }
+
+  data "template_file" "robots_deliver" {
+    template = "${file("${path.module}/../common-vcl/robots_deliver.vcl")}"
+
+    vars {
+        disable_indexing = "${var.disable_indexing}"
+    }
+  }
