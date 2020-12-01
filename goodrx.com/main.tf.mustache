@@ -2,6 +2,48 @@ provider "fastly" {
   api_key = "${var.fastly_api_key}"
 }
 
+
+{{#domains}}
+  domain {
+    name = "{{name}}"
+  }
+{{/domains}}
+
+{{#backends}}
+  backend {
+    name                  = "{{name}}"
+    address               = "{{address}}"
+    port                  = "{{port}}"
+    shield                = "{{shield}}"
+    weight                = "{{weight}}"
+    healthcheck           = "{{healthcheck}}"
+    ssl_cert_hostname     = "{{ssl_cert_host}}"
+    ssl_sni_hostname      = "{{ssl_sni_host}}"
+
+    auto_loadbalance      = false
+    between_bytes_timeout = 10000
+    connect_timeout       = 1000
+    error_threshold       = 0
+    first_byte_timeout    = "{{first_byte_timeout}}"
+    max_conn              = 200
+    request_condition     = "never"
+    ssl_check_cert        = "{{ssl_check_cert}}"
+    use_ssl               = true
+  }
+{{/backends}}
+
+
+  data "template_file" "init" {
+    template = "${file("${path.module}/vcl/init.vcl")}"
+
+    vars {
+        www_goodrx_com_host = "${var.www_goodrx_com_host}"
+        m_goodrx_com_host = "${var.m_goodrx_com_host}"
+        ssl_cert_host = "{{ssl_cert_host}}"
+        ssl_sni_host = "${var.ssl_sni_host}"
+    }
+  }
+
   data "template_file" "vcl_miss" {
     template = "${file("${path.module}/vcl/vcl_miss.vcl")}"
 
@@ -40,10 +82,34 @@ provider "fastly" {
     template = "${file("${path.module}/vcl/vcl_deliver.vcl")}"
   }
 
-  data "template_file" "robots_deliver" {
-    template = "${file("${path.module}/../common-vcl/robots_deliver.vcl")}"
+dictionary {
+    name = "sticky_origin_keys"
+  }
 
-    vars {
-        disable_indexing = "${var.disable_indexing}"
-    }
+  snippet {
+    content  = "${data.template_file.init.rendered}"
+    name     = "gdrx_init"
+    priority = 100
+    type     = "init"
+  }
+
+  snippet {
+    content  = "${data.template_file.vcl_recv.rendered}"
+    name     = "gdrx_recv"
+    priority = 100
+    type     = "recv"
+  }
+
+  snippet {
+    content  = "${data.template_file.vcl_miss.rendered}"
+    name     = "gdrx_recv"
+    priority = 100
+    type     = "miss"
+  }
+
+  snippet {
+    content  = "${data.template_file.vcl_pass.rendered}"
+    name     = "gdrx_pass"
+    priority = 100
+    type     = "pass"
   }

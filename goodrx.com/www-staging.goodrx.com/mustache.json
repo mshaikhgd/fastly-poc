@@ -1,0 +1,49 @@
+{
+  "activate": "false",
+  "ssl_cert_host": "www-staging.goodrx.com",
+  "ssl_sni_host": "www-staging.goodrx.com",
+  "ssl_check_cert": "true",
+  "domains": [
+    {
+      "name": "www-staging.goodrx.com"
+    }
+  ],
+  "backends": [
+    {
+      "name": "m-staging",
+      "address": "m-staging-origin.goodrx.com",
+      "port": "443",
+      "shield": "lax-ca-us",
+      "weight": "100",
+      "healthcheck": "Healthcheck",
+      "first_byte_timeout": 20000
+    },
+    {
+      "name": "www-staging-static",
+      "address": "www-staging.grxstatic.com",
+      "port": "443",
+      "shield": "lax-ca-us",
+      "weight": "100",
+      "healthcheck": "Healthcheck",
+      "first_byte_timeout": 20000
+    },
+    {
+      "name": "www-staging-origin",
+      "address": "www-staging-origin.goodrx.com",
+      "port": "443",
+      "shield": "lax-ca-us",
+      "weight": "100",
+      "healthcheck": "Healthcheck",
+      "first_byte_timeout": 20000
+    },
+    {
+      "name": "goodrx-content",
+      "address": "v2-52-2-dot-goodrx-content-prod.wl.r.appspot.com",
+      "port": "443",
+      "shield": "lax-ca-us",
+      "weight": "100",
+      "healthcheck": "Healthcheck",
+      "first_byte_timeout": 20000
+    }
+  ]
+}
