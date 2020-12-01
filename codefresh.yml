@@ -39,7 +39,23 @@ steps:
     commands:
       - "ls"
     stage: "test"
-    
+
+
+  plan-dev:
+    title: "Deploying to dev"
+    image: hashicorp/terraform:light
+    stage: "deploy"
+    type: freestyle
+    working_directory: '${{CLONE_STEP_NAME}}'
+    arguments:
+      image: 'mshaikhgd/fastly-poc'
+      commands:
+        - mustache www-staging.goodrx.com/mustache.json main.tf.mustache main.tf
+        - cat main.tf
+        - terraform www-staging.goodrx.com plan
+          -auto-approve
+          -var fastly_api_key=${FASTLY_API_KEY}  
+          
   deploy-dev:
     title: "Deploying to dev"
     image: hashicorp/terraform:light

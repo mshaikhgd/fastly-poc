@@ -78,6 +78,18 @@ provider "fastly" {
     }
   }
 
+  data "template_file" "redirects_vcl_recv" {
+    template = "${file("${path.module}/vcl/redirects_vcl_recv.vcl")}"
+
+    vars {
+        www_goodrx_com_host = "${var.www_goodrx_com_host}"
+        m_goodrx_com_host = "${var.m_goodrx_com_host}"
+        
+        ssl_cert_host = "{{ssl_cert_host}}"
+    }
+  }
+
+
   data "template_file" "vcl_deliver" {
     template = "${file("${path.module}/vcl/vcl_deliver.vcl")}"
   }
@@ -95,21 +107,27 @@ dictionary {
 
   snippet {
     content  = "${data.template_file.vcl_recv.rendered}"
-    name     = "gdrx_recv"
+    name     = "vcl_recv"
+    priority = 100
+    type     = "recv"
+  }
+  snippet {
+    content  = "${data.template_file.redirects_vcl_recv.rendered}"
+    name     = "redirects_vcl_recv"
     priority = 100
     type     = "recv"
   }
 
   snippet {
     content  = "${data.template_file.vcl_miss.rendered}"
-    name     = "gdrx_recv"
+    name     = "vcl_recv"
     priority = 100
     type     = "miss"
   }
 
   snippet {
     content  = "${data.template_file.vcl_pass.rendered}"
-    name     = "gdrx_pass"
+    name     = "vcl_pass"
     priority = 100
     type     = "pass"
   }
